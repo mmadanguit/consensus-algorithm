@@ -26,10 +26,14 @@ def reduce_dimensions(filename):
     principal_1 = data_scaled.dot(vectors.T[0])
     principal_2 = data_scaled.dot(vectors.T[1])
     principal_3 = data_scaled.dot(vectors.T[3])
+    principal_4 = data_scaled.dot(vectors.T[4])
+    principal_5 = data_scaled.dot(vectors.T[5])
 
     res = pd.DataFrame(principal_1, columns=['PC1'])
     res['PC2'] = principal_2
     res['PC3'] = principal_3
+    res['PC4'] = principal_4
+    res['PC5'] = principal_5
 
     return res
 
