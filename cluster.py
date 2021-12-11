@@ -123,11 +123,9 @@ class Cluster:
 
         return n_clusters, sse
 
-def reduce_dimensions(filename):
-    df = pd.read_csv(filename)
-
+def reduce_dimensions(csv):
     # scale the data so the mean is 0 and standard deviation is 1
-    data_scaled = StandardScaler().fit_transform(df)
+    data_scaled = StandardScaler().fit_transform(csv)
 
     # find the covariance matrix that gives the relative variance of the data
     data_scaled_transform = data_scaled.T
@@ -156,7 +154,8 @@ def plot_pca(dataframe):
 
 
 def get_opinion_groups(filename):
-    res = reduce_dimensions(filename) # reduce to 3 dimensions
+    df = pd.read_csv(filename)
+    res = reduce_dimensions(df) # reduce to 3 dimensions
 
     res_nd = res.to_numpy()
 
@@ -169,19 +168,16 @@ def get_opinion_groups(filename):
 
     centers, labels, sse = cluster.find_clusters_opt(int(n)) # find clusters
 
-    fig = plt.figure() # plot clusters IN 3D !
-    ax = fig.add_subplot(111, projection='3d')
-    p3d = ax.scatter(res_nd[:, 0], res_nd[:, 1],res_nd[:, 2], s=50, c=labels, cmap='viridis')
-    plt.show()
+    df['GROUP'] = labels
 
-    return res_nd[:, 0], res_nd[:, 1], res_nd[:, 2]
+    return df
 
 
 if __name__ == "__main__":
     filename = sys.argv[1]
-    get_opinion_groups(filename)
     #res = reduce_dimensions(filename) # reduce to 3 dimensions
 
+    get_opinion_groups(filename)
     #res_nd = res.to_numpy()
 
     # res_nd, y_true = make_blobs(n_samples=300, centers=4, cluster_std=0.60, random_state=0)
@@ -193,7 +189,8 @@ if __name__ == "__main__":
 
     #n = input("Enter the number of clusters: ") # input number of clusters indicated by elbow point
 
-    #centers, labels, sse = cluster.find_clusters_opt(int(n)) # find clusters
+    #centers, labels, sse = cluster.find_clusters_opt(int(n))
+    # find clusters
 
     #fig = plt.figure() # plot clusters IN 3D !
     #ax = fig.add_subplot(111, projection='3d')
