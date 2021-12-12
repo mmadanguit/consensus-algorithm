@@ -13,6 +13,8 @@ import sys
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
+import csv
+
 
 class Cluster:
 
@@ -169,15 +171,112 @@ def get_opinion_groups(filename):
     centers, labels, sse = cluster.find_clusters_opt(int(n)) # find clusters
 
     df['GROUP'] = labels
+    df.to_csv(r'~/Documents/ResponseMatrix_Mod.csv')
+
 
     return df
+
+def get_consensus(filename):
+    df = pd.read_csv(filename)
+    nd = df.to_numpy()
+
+    group0 = []
+    group1 = []
+    group2 = []
+
+    group0_agree = [0]*17
+    group0_disagree = [0]*17
+    group0_pass = [0]*17
+
+    group1_agree = [0]*17
+    group1_disagree = [0]*17
+    group1_pass = [0]*17
+
+    group2_agree = [0]*17
+    group2_disagree = [0]*17
+    group2_pass = [0]*17
+
+    consensus = [0]*17
+
+    for i in range(0, 73):
+        row = nd[i,:]
+
+        group = nd[i,17]
+
+        if int(group) == 0:
+            group0.append(row)
+        if int(group) == 1:
+            group1.append(row)
+        if int(group) == 2:
+            group2.append(row)
+
+    for i in group0:
+        for j in range(16):
+           if i[j] == 0.0:
+               group0_disagree[j] = group0_disagree[j] + 1
+           if i[j] == 1.0:
+               group0_agree[j] = group0_agree[j] + 1
+           if i[j] == 0.5:
+               group0_pass[j] = group0_pass[j] + 1
+
+    for i in group1:
+        for j in range(16):
+           if i[j] == 0.0:
+               group1_disagree[j] = group1_disagree[j] + 1
+           if i[j] == 1.0:
+               group1_agree[j] = group1_agree[j] + 1
+           if i[j] == 0.5:
+               group1_pass[j] = group1_pass[j] + 1
+
+    for i in group2:
+        for j in range(16):
+           if i[j] == 0.0:
+               group2_disagree[j] = group2_disagree[j] + 1
+           if i[j] == 1.0:
+               group2_agree[j] = group2_agree[j] + 1
+           if i[j] == 0.5:
+               group2_pass[j] = group2_pass[j] + 1
+
+
+    group0_pass_avg = [(i / len(group0))*100 for i in group0_pass]
+    group0_agree_avg = [(i / len(group0))*100 for i in group0_agree]
+    group0_disagree_avg = [(i / len(group0))*100 for i in group0_disagree]
+
+    group1_pass_avg = [(i / len(group1))*100 for i in group1_pass]
+    group1_agree_avg = [(i / len(group1))*100 for i in group1_agree]
+    group1_disagree_avg = [(i / len(group1))*100 for i in group1_disagree]
+
+    group2_pass_avg = [(i / len(group2))*100 for i in group2_pass]
+    group2_agree_avg = [(i / len(group2))*100 for i in group2_agree]
+    group2_disagree_avg = [(i / len(group2))*100 for i in group2_disagree]
+
+    for i in range(16):
+        consensus[i] = abs(((group0_agree_avg[i]+group1_agree_avg[i]+group2_agree_avg[i])/3) - 50)
+
+
+
+
+
+
+
+
+
+
+
+
+    # calculate percentage agreement for each question in all three get_opinion_groups
+
+    # find average of three percentages for eac statement
+
+    # take absolute value of subtraction from 50 for each average
 
 
 if __name__ == "__main__":
     filename = sys.argv[1]
     #res = reduce_dimensions(filename) # reduce to 3 dimensions
 
-    get_opinion_groups(filename)
+    #df = get_opinion_groups(filename)
+    get_consensus(filename)
     #res_nd = res.to_numpy()
 
     # res_nd, y_true = make_blobs(n_samples=300, centers=4, cluster_std=0.60, random_state=0)
