@@ -45,9 +45,40 @@ def calculate_percentiles(group):
     disagree_avg = [(i / len(group))*100 for i in disagree_count]
     pass_avg = [(i / len(group))*100 for i in pass_count]
 
-    res = pd.DataFrame(agree_avg, columns=['Agree'])
-    res['Disagree'] = disagree_avg
-    res['Pass'] = pass_avg
+    return [agree_avg, disagree_avg, pass_avg]
+
+def calculate_consensus(groups):
+    """Calculates consensus between three groups."""
+    n_questions = len(groups[0])
+
+    consensus = [0] * n_questions
+
+    for i in range(n_questions):
+        consensus[i] = abs(((groups[0][i]+groups[1][i]+groups[2][i])/3) - 50)
+
+    return consensus
+
+def calculate_individuality(main_group, comparison_groups):
+    """Determines how one group's agree percentage compares to other groups."""
+
+    diff_1 = []
+    diff_2 = []
+    diff = []
+
+    for i in range(len(main_group)):
+        diff_1.append(main_group[i]-comparison_groups[0][i])
+        diff_2.append(main_group[i]-comparison_groups[1][i])
+        diff.append((abs(main_group[i]-comparison_groups[0][i])+abs(main_group[i]-comparison_groups[1][i]))/2)
+
+    return [diff_1, diff_2, diff]
+
+def create_group_df(group, individuality):
+    res = pd.DataFrame(group[0], columns=['Agree'])
+    res['Disagree'] = group[1]
+    res['Pass'] = group[2]
+    res['Difference from First Group'] = individuality[0]
+    res['Difference from Second Group'] = individuality[1]
+    res['Average Difference'] = individuality[2]
 
     return res
 
@@ -60,9 +91,25 @@ def save_group_percentiles(data):
     group1 = calculate_percentiles(groups[1])
     group2 = calculate_percentiles(groups[2])
 
-    group0.to_csv(r'~/Documents/Group0.csv')
-    group1.to_csv(r'~/Documents/Group1.csv')
-    group2.to_csv(r'~/Documents/Group2.csv')
+    group0_agree = group0[0]
+    group1_agree = group1[0]
+    group2_agree = group2[0]
+
+    consensus = calculate_consensus([group0_agree, group1_agree, group2_agree])
+    consensus = pd.DataFrame(consensus, columns=['Consensus'])
+    consensus.to_csv(r'~/Documents/Consensus.csv')
+
+    group0_individuality = calculate_individuality(group0_agree, [group1_agree, group2_agree])
+    group1_individuality = calculate_individuality(group1_agree, [group0_agree, group2_agree])
+    group2_individuality = calculate_individuality(group2_agree, [group0_agree, group1_agree])
+
+    group0_res = create_group_df(group0, group0_individuality)
+    group1_res = create_group_df(group1, group1_individuality)
+    group2_res = create_group_df(group2, group2_individuality)
+
+    group0_res.to_csv(r'~/Documents/Group0.csv')
+    group1_res.to_csv(r'~/Documents/Group1.csv')
+    group2_res.to_csv(r'~/Documents/Group2.csv')
 
     print("Saved to Documents folder")
     return
@@ -77,25 +124,15 @@ def save_majority_percentiles(data):
         majority.append(row)
 
     majority = calculate_percentiles(majority)
-    majority.to_csv(r'~/Documents/Majority.csv')
+
+    majority_res = pd.DataFrame(majority[0], columns=['Agree'])
+    majority_res['Disagree'] = majority[1]
+    majority_res['Pass'] = majority[2]
+
+    majority_res.to_csv(r'~/Documents/Majority.csv')
 
     print("Saved to Documents folder")
     return
-
-
-def determine_individuality(data):
-
-    print(res['Disagree'].to_numpy())
-
-
-def calculate_consensus(filename):
-    consensus = [0]*16
-
-    for i in range(17):
-        consensus[i] = abs(((group0_agree_avg[i]+group1_agree_avg[i]+group2_agree_avg[i])/3) - 50)
-
-    consensus_res = pd.DataFrame(consensus, columns=['Consensus'])
-    consensus_res.to_csv(r'~/Documents/Consensus.csv')
 
 
 if __name__ == "__main__":
@@ -104,4 +141,4 @@ if __name__ == "__main__":
     df = pd.read_csv(filename)
     nd = df.to_numpy()
 
-    save_majority_percentiles(nd)
+    save_group_percentiles(nd)
