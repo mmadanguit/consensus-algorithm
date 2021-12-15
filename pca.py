@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import sys
 
-from cluster import cluster
+import cluster
 
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
